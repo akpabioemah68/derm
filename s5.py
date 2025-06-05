@@ -70,6 +70,6 @@ for index, row in df.iterrows():
                 'quantity': qty,
             }])
 
-    print(f"✅ Updated: {name}")
+    print(f" Updated: {name}")
 
-print("✅ All done.")
+print(" All done.")
