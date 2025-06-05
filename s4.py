@@ -8,7 +8,7 @@ file_path = os.path.join(os.path.dirname(__file__), file_name)
 df = pd.read_excel(file_path)
 
 # Odoo XML-RPC connection details (change to match your instance)
-url = 'https://your-odoo-instance.com'     # ← Replace
+url = 'https://dermaky.xyz'     # ← Replace
 db = 'derm'                  # ← Replace
 username = 'mailesom@gmail.com'                 # ← Replace
 password = 'almond.2'                 # ← Replace
