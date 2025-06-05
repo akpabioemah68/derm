@@ -10,7 +10,7 @@ df = pd.read_excel(file_path)
 # Odoo connection details
 url = 'https://dermaky.xyz'     # ← Replace with your URL
 db = 'derm'                  # ← Replace with your DB
-username = 'mailesom@gmqil.com'                 # ← Replace with your username
+username = 'mailesom@gmail.com'                 # ← Replace with your username
 password = 'almomd.2'                 # ← Replace with your password
 
 # Connect to Odoo
