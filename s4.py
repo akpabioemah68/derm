@@ -18,6 +18,15 @@ common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
 uid = common.authenticate(db, username, password, {})
 models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
 
+
+location_id = models.execute_kw(db, uid, password,
+    'stock.location', 'search',
+    [[['usage', '=', 'internal']]], {'limit': 1})
+
+if not location_id:
+    raise Exception("No internal stock location found.")
+location_id = location_id[0]
+
 # Helper: Get or create category
 def get_or_create_category(name):
     cat = models.execute_kw(db, uid, password, 'product.category', 'search_read', [[['name', '=', name]]], {'limit': 1})
@@ -51,11 +60,27 @@ for index, row in df.iterrows():
     }])
 
     # Inventory adjustment: set quantity on hand
-    inventory_id = models.execute_kw(db, uid, password, 'stock.inventory', 'create', [{
-        'name': f'Stock Update for {name}',
-        'product_ids': [(6, 0, [product_id])],
-    }])
-    models.execute_kw(db, uid, password, 'stock.inventory', 'action_start', [inventory_id])
+    # Update quantity via stock.quant
+    quant_ids = models.execute_kw(db, uid, password,
+        'stock.quant', 'search',
+        [[['product_id', '=', product_id], ['location_id', '=', location_id]]],
+        {'limit': 1})
+
+    if quant_ids:
+        models.execute_kw(db, uid, password,
+            'stock.quant', 'write',
+            [[quant_ids[0]], {'quantity': qty}])
+     else:
+        models.execute_kw(db, uid, password,
+            'stock.quant', 'create',
+            [{
+                'product_id': product_id,
+                'location_id': location_id,
+                'quantity': qty,
+            }])
+
+        print(f"✅ Updated: {name}")
+
 
     print(f"Updated: {name}")
 
