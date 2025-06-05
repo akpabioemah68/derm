@@ -36,7 +36,7 @@ for index, row in df.iterrows():
     product_name = row['Product Name']
     sale_price = row['Sale Price']
     category_name = row['Category']
-    supplier_cost = row['Supplier Cost']
+    supplier_cost = row['Suppier Cost']
     qty_on_hand = row['Quantity On Hand']
 
     # Find product by name
