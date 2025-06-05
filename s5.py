@@ -11,7 +11,7 @@ df = pd.read_excel(file_path)
 url = 'https://dermaky.xyz'     # ← Replace with your URL
 db = 'derm'                  # ← Replace with your DB
 username = 'mailesom@gmail.com'                 # ← Replace with your username
-password = 'almomd.2'                 # ← Replace with your password
+password = 'almond.2'                 # ← Replace with your password
 
 # Connect to Odoo
 common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
