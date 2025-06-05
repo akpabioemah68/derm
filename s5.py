@@ -51,25 +51,7 @@ for index, row in df.iterrows():
         'categ_id': category_id,
     }])
 
-    # Update quantity via stock.quant
-    quant_ids = models.execute_kw(db, uid, password,
-        'stock.quant', 'search',
-        [[['product_id', '=', product_id], ['location_id', '=', location_id]]],
-        {'limit': 1})
-
-    if quant_ids:
-        models.execute_kw(db, uid, password,
-            'stock.quant', 'write',
-            [[quant_ids[0]], {'quantity': qty}])
-    else:
-        models.execute_kw(db, uid, password,
-            'stock.quant', 'create',
-            [{
-                'product_id': product_id,
-                'location_id': location_id,
-                'quantity': qty,
-            }])
-
+    # Update quantity via stock.qu
     print(f" Updated: {name}")
 
 print(" All done.")
