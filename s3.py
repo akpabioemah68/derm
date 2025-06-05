@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Load Excel file from current directory
-file_name = 'products_update.xlsx'
+file_name = 'stock.xlsx'
 file_path = os.path.join(os.path.dirname(__file__), file_name)
 
 # Read Excel
