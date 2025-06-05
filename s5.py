@@ -19,13 +19,7 @@ uid = common.authenticate(db, username, password, {})
 models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
 
 # Get default internal location (WH/Stock)
-location_id = models.execute_kw(db, uid, password,
-    'stock.location', 'search',
-    [[['usage', '=', 'internal']]], {'limit': 1})
-
-if not location_id:
-    raise Exception("No internal stock location found.")
-location_id = location_id[0]
+location_id = 1
 
 # Get or create category
 def get_or_create_category(name):
