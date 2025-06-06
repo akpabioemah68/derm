@@ -20,8 +20,8 @@ class WooCommerceSync(models.Model):
     _description = 'WooCommerce Product and Inventory Sync'
 
     base_url = "https://skinpulse.ng/wp-json/wc/v3"
-    consumer_key = "ck_b18b319432ed7897bcd4e29d6d62cdc92a296f5e"
-    consumer_secret = "cs_176d68c14be489af0ac90d341223c8872815f31a"
+    consumer_key = "ck_191d2768e3e355cce69d59f7fb7a9f79e01d0f34"
+    consumer_secret = "cs_f4df20d3f7ba2fc5d70545ea36e294c8918124fb"
 
     
     @api.model
