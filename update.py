@@ -7,8 +7,8 @@ import json
 # ---------------------------
 ODOO_URL = 'https://your-odoo-domain.com'
 ODOO_DB = 'your_odoo_db'
-ODOO_USERNAME = 'your-odoo-username'
-ODOO_PASSWORD = 'your-odoo-password'
+ODOO_USERNAME = 'https://dermaky.com'
+ODOO_PASSWORD = 'almond.2'
 
 WC_BASE_URL = "https://dermaky.com/wp-json/wc/v3"
 WC_CONSUMER_KEY = "ck_191d2768e3e355cce69d59f7fb7a9f79e01d0f34"
