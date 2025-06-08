@@ -58,8 +58,45 @@ for product in products:
         if not wc_product_id:
             continue  # Skip if not linked to WooCommerce
 
+        if not product.get('categ_id'):
+            print(f"Product '{product['name']}' has no category, skipping.")
+            continue
+
         category_name = product['categ_id'][1].strip()
         category_name_lower = category_name.lower()
 
         # Get or create WooCommerce category
         if category_name_lower in wc_category_map:
+            category_id = wc_category_map[category_name_lower]
+        else:
+            create_response = requests.post(
+                f"{WC_BASE_URL}/products/categories",
+                auth=(WC_CONSUMER_KEY, WC_CONSUMER_SECRET),
+                headers=HEADERS,
+                data=json.dumps({"name": category_name})
+            )
+            if create_response.status_code in [200, 201]:
+                category_id = create_response.json()['id']
+                wc_category_map[category_name_lower] = category_id
+                print(f"Created category '{category_name}' on WooCommerce.")
+            else:
+                print(f"Failed to create category '{category_name}': {create_response.text}")
+                continue
+
+        # Update the WooCommerce product's category
+        update_data = {"categories": [{"id": category_id}]}
+        update_response = requests.put(
+            f"{WC_BASE_URL}/products/{wc_product_id}",
+            auth=(WC_CONSUMER_KEY, WC_CONSUMER_SECRET),
+            headers=HEADERS,
+            data=json.dumps(update_data)
+        )
+
+        if update_response.status_code == 200:
+            print(f"Updated product '{product['name']}' with category '{category_name}'.")
+        else:
+            print(f"Failed to update product '{product['name']}': {update_response.text}")
+
+    except Exception as e:
+        print(f"Error processing product '{product.get('name', '')}': {e}")
+                
