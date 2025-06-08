@@ -4,7 +4,7 @@ import xmlrpc.client
 # Odoo Configuration
 # ---------------------------
 ODOO_URL = 'https://skinpulse.online'
-ODOO_DB = 'derm'
+ODOO_DB = 'new2'
 ODOO_USERNAME = 'oga@skinpulse.online'
 ODOO_PASSWORD = 'pr355ON@2020'
 
