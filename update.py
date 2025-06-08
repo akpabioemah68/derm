@@ -5,9 +5,9 @@ import json
 # ---------------------------
 # Configuration
 # ---------------------------
-ODOO_URL = 'https://your-odoo-domain.com'
-ODOO_DB = 'your_odoo_db'
-ODOO_USERNAME = 'https://dermaky.com'
+ODOO_URL = 'https://dermaky.com'
+ODOO_DB = 'derm'
+ODOO_USERNAME = 'mailesom@gmail.com'
 ODOO_PASSWORD = 'almond.2'
 
 WC_BASE_URL = "https://dermaky.com/wp-json/wc/v3"
