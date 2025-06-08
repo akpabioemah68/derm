@@ -133,7 +133,7 @@ def main():
         if not cat_id:
             continue
 
-        success = update_wc_product(wc_product['id'], cat_id, quantity)
+        success = update_wc_product(wc_product['id'], cat_id, stock_quantity)
         if success:
             print(f"✅ Updated '{prod_name}': Category = '{category}', Quantity = {quantity}")
         else:
