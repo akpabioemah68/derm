@@ -16,7 +16,7 @@ EXCEL_FILE = 'Stock.xlsx'
 # ---------------------------
 def load_excel_data(file_path):
     df = pd.read_excel(file_path)
-    df = df[['Product Name', 'Category', 'Quantity']]
+    df = df[['Product Name', 'Category', 'Quantity On Hold']]
     df.dropna(subset=['Product Name'], inplace=True)
     df['Product Name'] = df['Product Name'].str.strip().str.lower()
     return df
