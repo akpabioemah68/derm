@@ -5,7 +5,7 @@ import json
 # ---------------------------
 # Configuration
 # ---------------------------
-ODOO_URL = 'https://dermaky.com'
+ODOO_URL = 'https://dermaky.xyz'
 ODOO_DB = 'derm'
 ODOO_USERNAME = 'mailesom@gmail.com'
 ODOO_PASSWORD = 'almond.2'
