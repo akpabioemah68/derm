@@ -122,7 +122,7 @@ def main():
     for _, row in excel_data.iterrows():
         prod_name = row['Product Name']
         category = row['Category']
-        quantity = row['Quantity']
+        quantity = row['Quantity On Hold']
 
         wc_product = wc_product_map.get(prod_name)
         if not wc_product:
@@ -133,7 +133,7 @@ def main():
         if not cat_id:
             continue
 
-        success = update_wc_product(wc_product['id'], cat_id, stock_quantity)
+        success = update_wc_product(wc_product['id'], cat_id, quantity)
         if success:
             print(f"✅ Updated '{prod_name}': Category = '{category}', Quantity = {quantity}")
         else:
