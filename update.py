@@ -98,4 +98,32 @@ products = models.execute_kw(
 # ---------------------------
 # Assign WooCommerce Categories
 # ---------------------------
-for product
+for product in products:
+    wc_product_id = product.get('woocommerce_product_id')
+    categ_id = product.get('categ_id')
+
+    if not wc_product_id or not categ_id:
+        continue
+
+    odoo_cat_id = categ_id[0]
+    wc_cat_id = odoo_to_wc_category_id.get(odoo_cat_id)
+
+    if not wc_cat_id:
+        print(f"No WooCommerce category found for product '{product['name']}'")
+        continue
+
+    update_payload = {
+        "categories": [{"id": wc_cat_id}]
+    }
+
+    response = requests.put(
+        f"{WC_BASE_URL}/products/{wc_product_id}",
+        auth=(WC_CONSUMER_KEY, WC_CONSUMER_SECRET),
+        headers=HEADERS,
+        data=json.dumps(update_payload)
+    )
+
+    if response.status_code == 200:
+        print(f"Assigned category '{categ_id[1]}' to product '{product['name']}'")
+    else:
+        print(f"Failed to assign category to product '{product['name']}': {response.text}")
