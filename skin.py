@@ -16,7 +16,7 @@ uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
 # ---------------------------
-# Load All Product Templates
+# Load All product.template
 # ---------------------------
 template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
@@ -31,7 +31,7 @@ templates = models.execute_kw(
 )
 
 # ---------------------------
-# Load All Product Variants
+# Load All product.product and Map to Template
 # ---------------------------
 product_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
@@ -45,52 +45,38 @@ products = models.execute_kw(
     {'fields': ['id', 'name', 'product_tmpl_id']}
 )
 
-# ---------------------------
-# Build Mapping: Template ID → List of Variants
-# ---------------------------
 from collections import defaultdict
 
 tmpl_to_variants = defaultdict(list)
-
 for product in products:
     tmpl_id = product['product_tmpl_id'][0] if product['product_tmpl_id'] else None
     if tmpl_id:
         tmpl_to_variants[tmpl_id].append(product)
 
 # ---------------------------
-# Separate Templates With and Without Variants
+# Trigger Variant Creation for Templates Without Any
 # ---------------------------
-templates_with_variants = []
-templates_without_variants = []
+templates_missing_variants = []
 
 for tmpl in templates:
     tmpl_id = tmpl['id']
-    if tmpl_id in tmpl_to_variants:
-        templates_with_variants.append({
-            'id': tmpl_id,
-            'name': tmpl['name'],
-            'variants': tmpl_to_variants[tmpl_id]
-        })
-    else:
-        templates_without_variants.append(tmpl)
+    if tmpl_id not in tmpl_to_variants:
+        # Add to list for reporting
+        templates_missing_variants.append(tmpl)
 
-# ---------------------------
-# Display Results
-# ---------------------------
-print("\n✅ Templates WITH variants:")
-for tmpl in templates_with_variants:
-    print(f"\n- {tmpl['name']} (ID: {tmpl['id']})")
-    for variant in tmpl['variants']:
-        print(f"   - Variant: {variant['name']} (ID: {variant['id']})")
-
-print("\n🚫 Templates WITHOUT variants:")
-for tmpl in templates_without_variants:
-    print(f" - {tmpl['name']} (ID: {tmpl['id']})")
+        # Trigger Odoo to generate a variant (write with empty dict)
+        try:
+            models.execute_kw(
+                ODOO_DB, uid, ODOO_PASSWORD,
+                'product.template', 'write',
+                [[tmpl_id], {}]
+            )
+            print(f"✅ Created variant for: {tmpl['name']} (Template ID: {tmpl_id})")
+        except Exception as e:
+            print(f"❌ Failed to create variant for: {tmpl['name']} (ID: {tmpl_id}) - {e}")
 
 # ---------------------------
 # Summary
 # ---------------------------
-print("\n📊 Summary:")
-print(f"Total product.template records: {len(templates)}")
-print(f"Templates WITH variants: {len(templates_with_variants)}")
-print(f"Templates WITHOUT variants: {len(templates_without_variants)}")
+print("\n📊 Variant Creation Summary:")
+print(f"Total templates without variants before fix: {len(templates_missing_variants)}")
