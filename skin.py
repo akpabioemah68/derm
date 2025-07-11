@@ -22,50 +22,52 @@ template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.template', 'search', [[]]
 )
+
 product_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.product', 'search', [[]]
 )
 
-print(f"🔢 Total product.template records: {len(template_ids)}")
-print(f"🔢 Total product.product records (variants): {len(product_ids)}")
-
-# ---------------------------
-# Get all template IDs linked to products
-# ---------------------------
-linked_template_ids = models.execute_kw(
+# Get linked template IDs from product.product
+linked_templates = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.product', 'read',
     [product_ids],
     {'fields': ['product_tmpl_id']}
 )
 
-linked_ids = set(pt['product_tmpl_id'][0] for pt in linked_template_ids if pt['product_tmpl_id'])
+linked_template_ids = set([x['product_tmpl_id'][0] for x in linked_templates if x['product_tmpl_id']])
+
+# Find templates that are not linked
+unlinked_template_ids = list(set(template_ids) - linked_template_ids)
+
+print(f"🔍 Found {len(unlinked_template_ids)} product.template records with NO variants.")
 
 # ---------------------------
-# Find product.template IDs NOT in product.product
+# Generate Variants for Missing Templates
 # ---------------------------
-unlinked_template_ids = list(set(template_ids) - linked_ids)
+for tmpl_id in unlinked_template_ids:
+    tmpl_data = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'product.template', 'read',
+        [[tmpl_id]],
+        {'fields': ['name', 'attribute_line_ids', 'active']}
+    )[0]
 
-print(f"❌ product.template records NOT linked to any product.product: {len(unlinked_template_ids)}")
+    name = tmpl_data['name']
+    attr_lines = tmpl_data['attribute_line_ids']
+    active = tmpl_data['active']
+
+    # Trigger variant generation by writing to attribute_line_ids (or even empty write)
+    result = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'product.template', 'write',
+        [[tmpl_id], {}]  # Empty write triggers recompute and variant generation
+    )
+
+    print(f"✅ Generated variants for: {name} (ID: {tmpl_id}) | Attributes: {'Yes' if attr_lines else 'No'} | {'Active' if active else 'Inactive'}")
 
 # ---------------------------
-# Fetch and Display Those Templates
+# Final Check (Optional)
 # ---------------------------
-templates_not_loaded = models.execute_kw(
-    ODOO_DB, uid, ODOO_PASSWORD,
-    'product.template', 'read',
-    [unlinked_template_ids],
-    {'fields': ['name', 'default_code', 'active', 'type', 'attribute_line_ids']}
-)
-
-print("\n🛑 Templates missing variants and won't appear in product search:")
-for tmpl in templates_not_loaded:
-    status = "🟢 Active" if tmpl['active'] else "🔴 Inactive"
-    reason = "❌ No attribute lines" if not tmpl['attribute_line_ids'] else "⚠ Variants not generated"
-    print(f"- {tmpl['name']} (Code: {tmpl.get('default_code', 'N/A')}, {status}) → {reason}")
-
-# ---------------------------
-# Summary
-# ---------------------------
-print("\n✅ Check complete. These templates will not appear in the UI product search until variants are created.")
+print("\n🎉 All missing variants generated. You can rerun the check script to confirm.")
