@@ -16,56 +16,52 @@ uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
 # ---------------------------
-# Step 1: Get All product.template IDs
+# Load product.template and product.product IDs
 # ---------------------------
 template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.template', 'search', [[]]
 )
+product_ids = models.execute_kw(
+    ODOO_DB, uid, ODOO_PASSWORD,
+    'product.product', 'search', [[]]
+)
 
-print(f"🔍 Total product templates found: {len(template_ids)}")
-
-# ---------------------------
-# Step 2: Find Templates with Attributes but No Variants
-# ---------------------------
-templates_to_fix = []
-
-for template_id in template_ids:
-    variant_ids = models.execute_kw(
-        ODOO_DB, uid, ODOO_PASSWORD,
-        'product.product', 'search',
-        [[('product_tmpl_id', '=', template_id)]]
-    )
-    if not variant_ids:
-        template_data = models.execute_kw(
-            ODOO_DB, uid, ODOO_PASSWORD,
-            'product.template', 'read',
-            [[template_id]],
-            {'fields': ['name', 'attribute_line_ids']}
-        )[0]
-
-        if template_data['attribute_line_ids']:
-            templates_to_fix.append({
-                'id': template_id,
-                'name': template_data['name']
-            })
-
-print(f"⚙ Templates eligible for variant generation: {len(templates_to_fix)}")
+print(f"🔢 Total product.template records: {len(template_ids)}")
+print(f"🔢 Total product.product records (variants): {len(product_ids)}")
 
 # ---------------------------
-# Step 3: Trigger Variant Generation
+# Get all template IDs linked to products
 # ---------------------------
-for template in templates_to_fix:
-    # Perform a dummy write on attribute_line_ids to trigger recompute
-    result = models.execute_kw(
-        ODOO_DB, uid, ODOO_PASSWORD,
-        'product.template', 'write',
-        [[template['id']], {}]  # Empty write will trigger variant recompute
-    )
+linked_template_ids = models.execute_kw(
+    ODOO_DB, uid, ODOO_PASSWORD,
+    'product.product', 'read',
+    [product_ids],
+    {'fields': ['product_tmpl_id']}
+)
 
-    print(f"✅ Variants triggered for: {template['name']} (ID: {template['id']})")
+linked_ids = set(pt['product_tmpl_id'][0] for pt in linked_template_ids if pt['product_tmpl_id'])
 
 # ---------------------------
-# Done
+# Find product.template IDs NOT in product.product
 # ---------------------------
-print("🎉 Variant generation completed for all eligible templates.")
+unlinked_template_ids = list(set(template_ids) - linked_ids)
+
+print(f"❌ product.template records NOT linked to any product.product: {len(unlinked_template_ids)}")
+
+# ---------------------------
+# Fetch and Display Those Templates
+# ---------------------------
+templates_not_loaded = models.execute_kw(
+    ODOO_DB, uid, ODOO_PASSWORD,
+    'product.template', 'read',
+    [unlinked_template_ids],
+    {'fields': ['name', 'default_code', 'active', 'type', 'attribute_line_ids']}
+)
+
+print("\n🛑 Templates missing variants and won't appear in product search:")
+for tmpl in templates_not_loaded:
+    status = "🟢 Active" if tmpl['active'] else "🔴 Inactive"
+    reason = "❌ No attribute lines" if not tmpl['attribute_line_ids'] else "⚠ Variants not generated"
+    print(f"- {tmpl['name']} (Code: {tmpl.get('default_code', 'N/A')}_
+    
