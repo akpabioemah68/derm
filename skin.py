@@ -16,90 +16,81 @@ uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
 # ---------------------------
-# Step 1: Load all product.template records
+# Load All Product Templates
 # ---------------------------
 template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.template', 'search', [[]]
 )
+
 templates = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.template', 'read',
     [template_ids],
-    {'fields': ['name', 'active']}
+    {'fields': ['id', 'name', 'active']}
 )
 
-print(f"🔢 Total product.template records: {len(templates)}")
-
 # ---------------------------
-# Step 2: Load all product.product records (variants)
+# Load All Product Variants
 # ---------------------------
 product_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.product', 'search', [[]]
 )
+
 products = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.product', 'read',
     [product_ids],
-    {'fields': ['id', 'product_tmpl_id', 'name', 'default_code', 'active']}
+    {'fields': ['id', 'name', 'product_tmpl_id']}
 )
 
-print(f"🔢 Total product.product (variant) records: {len(products)}")
+# ---------------------------
+# Build Mapping: Template ID → List of Variants
+# ---------------------------
+from collections import defaultdict
 
-# ---------------------------
-# Step 3: Build reverse index: template_id → list of variants
-# ---------------------------
-tmpl_to_products = {}
-for prod in products:
-    tmpl_id = prod['product_tmpl_id'][0] if prod['product_tmpl_id'] else None
+tmpl_to_variants = defaultdict(list)
+
+for product in products:
+    tmpl_id = product['product_tmpl_id'][0] if product['product_tmpl_id'] else None
     if tmpl_id:
-        tmpl_to_products.setdefault(tmpl_id, []).append(prod)
+        tmpl_to_variants[tmpl_id].append(product)
 
 # ---------------------------
-# Step 4: Analyze missing or invalid variants
+# Separate Templates With and Without Variants
 # ---------------------------
-missing_variant_templates = []
-inactive_variant_templates = []
-invalid_variant_templates = []
+templates_with_variants = []
+templates_without_variants = []
 
 for tmpl in templates:
     tmpl_id = tmpl['id']
-    tmpl_name = tmpl['name']
-    tmpl_active = tmpl['active']
-    linked_variants = tmpl_to_products.get(tmpl_id, [])
-
-    if not linked_variants:
-        missing_variant_templates.append(tmpl)
+    if tmpl_id in tmpl_to_variants:
+        templates_with_variants.append({
+            'id': tmpl_id,
+            'name': tmpl['name'],
+            'variants': tmpl_to_variants[tmpl_id]
+        })
     else:
-        has_active = any(p['active'] for p in linked_variants)
-        has_searchable = any(p['name'] or p['default_code'] for p in linked_variants)
-
-        if not has_active:
-            inactive_variant_templates.append(tmpl)
-        elif not has_searchable:
-            invalid_variant_templates.append(tmpl)
+        templates_without_variants.append(tmpl)
 
 # ---------------------------
-# Step 5: Report Results
+# Display Results
 # ---------------------------
-print("\n🚫 Templates with NO variants:")
-for tmpl in missing_variant_templates:
-    print(f" - {tmpl['name']} (ID: {tmpl['id']})")
+print("\n✅ Templates WITH variants:")
+for tmpl in templates_with_variants:
+    print(f"\n- {tmpl['name']} (ID: {tmpl['id']})")
+    for variant in tmpl['variants']:
+        print(f"   - Variant: {variant['name']} (ID: {variant['id']})")
 
-print("\n⚠ Templates with only INACTIVE variants:")
-for tmpl in inactive_variant_templates:
-    print(f" - {tmpl['name']} (ID: {tmpl['id']})")
-
-print("\n⚠ Templates with variants missing name/default_code:")
-for tmpl in invalid_variant_templates:
+print("\n🚫 Templates WITHOUT variants:")
+for tmpl in templates_without_variants:
     print(f" - {tmpl['name']} (ID: {tmpl['id']})")
 
 # ---------------------------
 # Summary
 # ---------------------------
-print(f"\nSummary:")
-print(f"❌ Missing variants: {len(missing_variant_templates)}")
-print(f"🟡 Inactive variants: {len(inactive_variant_templates)}")
-print(f"🟠 Variants missing name/code: {len(invalid_variant_templates)}")
-print(f"✅ Valid templates with good variants: {len(template_ids) - len(missing_variant_templates) - len(inactive_variant_templates) - len(invalid_variant_templates)}")
+print("\n📊 Summary:")
+print(f"Total product.template records: {len(templates)}")
+print(f"Templates WITH variants: {len(templates_with_variants)}")
+print(f"Templates WITHOUT variants: {len(templates_without_variants)}")
