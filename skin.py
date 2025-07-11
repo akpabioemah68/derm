@@ -61,7 +61,7 @@ templates_not_loaded = models.execute_kw(
 
 print("\n🛑 Templates missing variants and won't appear in product search:")
 for tmpl in templates_not_loaded:
-    status = "🟢 Active" if tmpl['active'] else "🔴 Inactive"
+    status = "Active" if tmpl['active'] else "Inactive"
     reason = "❌ No attribute lines" if not tmpl['attribute_line_ids'] else "⚠ Variants not generated"
-    print(f"- {tmpl['name']} (Code: {tmpl.get('default_code', 'N/A')}_
+    print(f"- {tmpl['name']} (Code: {tmpl.get('default_code', 'N/A')}
     
