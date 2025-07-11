@@ -4,7 +4,7 @@
 DB_NAME="wordpress_ip"
 DB_USER="wpuser"
 DB_PASS="YourStrongPassword"
-DB_ROOT_PASS="your_mysql_root_password"  # Replace this before running
+DB_ROOT_PASS="almond.2"  # Replace this before running
 
 SITE_DIR="/var/www/ipsite"
 WP_URL="https://wordpress.org/latest.tar.gz"
