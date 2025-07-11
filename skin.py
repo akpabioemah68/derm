@@ -16,9 +16,8 @@ uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
 # ---------------------------
-# Find product.template records with NO variants
+# Step 1: Get All product.template IDs
 # ---------------------------
-# Step 1: Get all product.template IDs
 template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
     'product.template', 'search', [[]]
@@ -26,8 +25,10 @@ template_ids = models.execute_kw(
 
 print(f"🔍 Total product templates found: {len(template_ids)}")
 
-# Step 2: Loop through templates and find those without variants
-template_ids_no_variant = []
+# ---------------------------
+# Step 2: Find Templates with Attributes but No Variants
+# ---------------------------
+templates_to_fix = []
 
 for template_id in template_ids:
     variant_ids = models.execute_kw(
@@ -36,33 +37,35 @@ for template_id in template_ids:
         [[('product_tmpl_id', '=', template_id)]]
     )
     if not variant_ids:
-        template_ids_no_variant.append(template_id)
+        template_data = models.execute_kw(
+            ODOO_DB, uid, ODOO_PASSWORD,
+            'product.template', 'read',
+            [[template_id]],
+            {'fields': ['name', 'attribute_line_ids']}
+        )[0]
 
-print(f"⚠ Templates with NO variants: {len(template_ids_no_variant)}")
+        if template_data['attribute_line_ids']:
+            templates_to_fix.append({
+                'id': template_id,
+                'name': template_data['name']
+            })
 
-# Step 3: Read product.template records without variants
-templates_without_variants = models.execute_kw(
-    ODOO_DB, uid, ODOO_PASSWORD,
-    'product.template', 'read',
-    [template_ids_no_variant],
-    {'fields': ['name', 'default_code', 'attribute_line_ids', 'type']}
-)
-
-# Step 4: Display info and potential issues
-print("\n🟠 List of product.template records without variants:")
-for template in templates_without_variants:
-    name = template.get('name')
-    code = template.get('default_code', 'N/A')
-    attr_lines = template.get('attribute_line_ids', [])
-    product_type = template.get('type', 'N/A')
-
-    reason = "❌ No attribute lines" if not attr_lines else "⚠ Variants not generated"
-    
-    print(f"- Name: {name}, Code: {code}, Type: {product_type}")
-    print(f"  ⛔ Reason: {reason}")
-    print("")
+print(f"⚙ Templates eligible for variant generation: {len(templates_to_fix)}")
 
 # ---------------------------
-# Summary
+# Step 3: Trigger Variant Generation
 # ---------------------------
-print("✅ Done. You may consider regenerating variants via UI or code if needed.")
+for template in templates_to_fix:
+    # Perform a dummy write on attribute_line_ids to trigger recompute
+    result = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'product.template', 'write',
+        [[template['id']], {}]  # Empty write will trigger variant recompute
+    )
+
+    print(f"✅ Variants triggered for: {template['name']} (ID: {template['id']})")
+
+# ---------------------------
+# Done
+# ---------------------------
+print("🎉 Variant generation completed for all eligible templates.")
