@@ -21,38 +21,6 @@ class ProductTemplate(models.Model):
 
 
 
-    quantity_sum_all_locations = fields.Float(
-        string="Qty On Hold",
-        compute='_compute_quantity_sum_all_locations',
-        store=False
-    )
-
-
-
-    @api.depends('product_variant_ids.stock_quant_ids.quantity')
-    def _compute_quantity_sum_all_locations(self):
-        Quant = self.env['stock.quant'].sudo()
-
-        for template in self:
-            variant_ids = template.product_variant_ids.ids
-            if not variant_ids:
-                template.quantity_sum_all_locations = 0.0
-                continue
-
-            # 🟢 Just like SQL: Get the last quant record (highest ID) for any variant, no filters
-            last_quant = Quant.search([
-                ('product_id', 'in', variant_ids),
-            ], order='id DESC', limit=1)
-
-            qty = abs(last_quant.quantity) if last_quant else 0.0
-
-            _logger.info(
-                f"🧮 Template '{template.name}' (ID {template.id}) → Last Quant (no filters) = {qty}"
-            )
-
-            template.quantity_sum_all_locations = qty
-
-
     @tools.ormcache()
     def _get_default_category_id(self):
         # Deletion forbidden (at least through unlink)
