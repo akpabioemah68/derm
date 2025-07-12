@@ -33,7 +33,7 @@ for template_id in template_ids:
         ODOO_DB, uid, ODOO_PASSWORD,
         'product.template', 'read',
         [template_id],
-        {'fields': ['name', 'type', 'qty_available', 'purchase_count', 'tracking']}
+        {'fields': ['name', 'type', 'qty_available', 'tracking']}
     )[0]
 
     print("\n============================")
@@ -42,13 +42,12 @@ for template_id in template_ids:
     print(f"Type: {template['type']}")
     print(f"Tracking: {template['tracking']}")
     print(f"Qty On Hand: {template['qty_available']}")
-    print(f"Units Purchased: {template['purchase_count']}")
 
     if template['type'] != 'product':
         print("⚠️  Not a storable product (type != 'product')")
         continue
 
-    # Get product.product variant(s) for this template
+    # Get product.product variant(s)
     variant_ids = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'product.product', 'search',
@@ -69,7 +68,21 @@ for template_id in template_ids:
 
         print(f"  ➤ Variant ID: {variant_id}, Internal Ref: {variant.get('default_code')}, Qty: {variant['qty_available']}")
 
-        # Check stock.quant (per location)
+        # Total Units Purchased from purchase.order.line
+        po_line_ids = models.execute_kw(
+            ODOO_DB, uid, ODOO_PASSWORD,
+            'purchase.order.line', 'search_read',
+            [[
+                ['product_id', '=', variant_id],
+                ['order_id.state', 'in', ['purchase', 'done']]
+            ]],
+            {'fields': ['product_qty']}
+        )
+
+        total_purchased = sum(line['product_qty'] for line in po_line_ids)
+        print(f"    🧾 Total Units Purchased: {total_purchased}")
+
+        # Check stock.quant per location
         quant_ids = models.execute_kw(
             ODOO_DB, uid, ODOO_PASSWORD,
             'stock.quant', 'search_read',
@@ -84,4 +97,5 @@ for template_id in template_ids:
                 location = quant['location_id'][1] if quant['location_id'] else 'Unknown'
                 print(f"    🏬 Location: {location}, Quantity: {quant['quantity']}")
 
-print("\n✅ Finished inventory diagnostics.")
+print("\n✅ Inventory + Purchase diagnostics complete.")
+        
