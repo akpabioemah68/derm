@@ -15,10 +15,10 @@ common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
 uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
-print("🔎 Scanning for product variants linked to PO lines...\n")
+print("🔍 Scanning product variants for archiving...\n")
 
 # ---------------------------
-# Step 1: Get all product variants
+# Get all product.product variants
 # ---------------------------
 variant_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
@@ -26,32 +26,31 @@ variant_ids = models.execute_kw(
     [[]]
 )
 
-linked_variants = 0
-safe_variants = 0
+archived_count = 0
+in_use_count = 0
 
 for vid in variant_ids:
-    # Count how many PO lines use this variant
-    po_line_count = models.execute_kw(
+    # Check if this variant is used in any PO lines
+    usage_count = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'purchase.order.line', 'search_count',
         [[['product_id', '=', vid]]]
     )
 
-    if po_line_count > 0:
-        product = models.execute_kw(
+    if usage_count == 0:
+        # Archive it
+        models.execute_kw(
             ODOO_DB, uid, ODOO_PASSWORD,
-            'product.product', 'read',
-            [vid],
-            {'fields': ['name', 'product_tmpl_id']}
-        )[0]
-
-        tmpl_id = product['product_tmpl_id'][0]
-        tmpl_name = product['name']
-
-        print(f"❌ Variant ID {vid} (Name: {tmpl_name}) is still used in {po_line_count} PO line(s) → Template ID {tmpl_id}")
-        linked_variants += 1
+            'product.product', 'write',
+            [[vid], {'active': False}]
+        )
+        print(f"✅ Archived unused variant ID {vid}")
+        archived_count += 1
     else:
-        safe_variants += 1
+        in_use_count += 1
+        print(f"⏩ Skipped variant ID {vid} — still in use by {usage_count} PO line(s)")
 
-print(f"\n✅ Check complete. {linked_variants} variants are in use, {safe_variants} are unused.")
-print("💡 Do NOT delete products in use. Archive them instead!")
+print("\n🎯 Archive Summary:")
+print(f"   🔒 Archived: {archived_count} variant(s)")
+print(f"   📦 In Use:   {in_use_count} variant(s)")
+print("✅ Done.")
