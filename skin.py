@@ -16,7 +16,7 @@ uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
 
 # ---------------------------
-# Get Last 26 Product Templates (Sorted by ID DESC)
+# Get Last 26 Product Templates
 # ---------------------------
 template_ids = models.execute_kw(
     ODOO_DB, uid, ODOO_PASSWORD,
@@ -25,57 +25,63 @@ template_ids = models.execute_kw(
     {'order': 'id desc', 'limit': 26}
 )
 
-templates = models.execute_kw(
-    ODOO_DB, uid, ODOO_PASSWORD,
-    'product.template', 'read',
-    [template_ids],
-    {'fields': ['id', 'name', 'standard_price']}
-)
-
 # ---------------------------
-# Get Product Variants for These Templates
+# Inspect Each Template
 # ---------------------------
-template_to_variant = {}
+for template_id in template_ids:
+    template = models.execute_kw(
+        ODOO_DB, uid, ODOO_PASSWORD,
+        'product.template', 'read',
+        [template_id],
+        {'fields': ['name', 'type', 'qty_available', 'purchase_count', 'tracking']}
+    )[0]
 
-for tmpl in templates:
-    tmpl_id = tmpl['id']
+    print("\n============================")
+    print(f"Template ID: {template_id}")
+    print(f"Name: {template['name']}")
+    print(f"Type: {template['type']}")
+    print(f"Tracking: {template['tracking']}")
+    print(f"Qty On Hand: {template['qty_available']}")
+    print(f"Units Purchased: {template['purchase_count']}")
+
+    if template['type'] != 'product':
+        print("⚠️  Not a storable product (type != 'product')")
+        continue
+
+    # Get product.product variant(s) for this template
     variant_ids = models.execute_kw(
         ODOO_DB, uid, ODOO_PASSWORD,
         'product.product', 'search',
-        [[('product_tmpl_id', '=', tmpl_id)]]
+        [[['product_tmpl_id', '=', template_id]]]
     )
 
     if not variant_ids:
-        print(f"⚠️ No variant found for template '{tmpl['name']}' (ID: {tmpl_id})")
+        print("❌ No product variants found.")
         continue
 
-    template_to_variant[tmpl_id] = {
-        'template': tmpl,
-        'variants': variant_ids
-    }
-
-# ---------------------------
-# Update Variant Cost from Template Cost
-# ---------------------------
-updated = 0
-
-for tmpl_id, info in template_to_variant.items():
-    template = info['template']
-    variant_ids = info['variants']
-    cost = template['standard_price']
-
-    try:
-        success = models.execute_kw(
+    for variant_id in variant_ids:
+        variant = models.execute_kw(
             ODOO_DB, uid, ODOO_PASSWORD,
-            'product.product', 'write',
-            [variant_ids, {'standard_price': cost}]
-        )
-        print(f"✅ Updated cost on {len(variant_ids)} variant(s) of '{template['name']}' to {cost}")
-        updated += len(variant_ids)
-    except Exception as e:
-        print(f"❌ Error updating cost for template '{template['name']}' - {e}")
+            'product.product', 'read',
+            [variant_id],
+            {'fields': ['default_code', 'qty_available']}
+        )[0]
 
-# ---------------------------
-# Summary
-# ---------------------------
-print(f"\n📊 Updated cost on {updated} variants across {len(template_to_variant)} templates.")
+        print(f"  ➤ Variant ID: {variant_id}, Internal Ref: {variant.get('default_code')}, Qty: {variant['qty_available']}")
+
+        # Check stock.quant (per location)
+        quant_ids = models.execute_kw(
+            ODOO_DB, uid, ODOO_PASSWORD,
+            'stock.quant', 'search_read',
+            [[['product_id', '=', variant_id]]],
+            {'fields': ['location_id', 'quantity']}
+        )
+
+        if not quant_ids:
+            print("    ⚠️ No stock.quant entries.")
+        else:
+            for quant in quant_ids:
+                location = quant['location_id'][1] if quant['location_id'] else 'Unknown'
+                print(f"    🏬 Location: {location}, Quantity: {quant['quantity']}")
+
+print("\n✅ Finished inventory diagnostics.")
