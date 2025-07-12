@@ -187,16 +187,4 @@ action = {
 
 
 
-  <record id="custom_product_template_tree_view" model="ir.ui.view">
-    <field name="name">product.template.tree.inherit.quantity.sum</field>
-    <field name="model">product.template</field>
-    <field name="inherit_id" ref="product.product_template_tree_view"/>
-    <field name="arch" type="xml">
-      <xpath expr="//field[@name='list_price']" position="after">
-        <field name="quantity_sum_all_locations"/>
-      </xpath>
-    </field>
-  </record>
-
-
 </odoo>
