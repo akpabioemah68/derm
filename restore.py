@@ -76,9 +76,10 @@ for prod in src_products:
 # Read tag names from source
 if all_tag_ids:
     tag_data = src_models.execute_kw(
-        SRC_DB, src_uid, SRC_PASSWORD,
-        'product.tag', 'read',
-        list(all_tag_ids), {'fields': ['name']}
+    SRC_DB, src_uid, SRC_PASSWORD,
+    'product.tag', 'read',
+    [list(all_tag_ids)],  # args must be a list of one argument
+    {'fields': ['name']}  # kwargs
     )
     for tag in tag_data:
         tag_id = dst_models.execute_kw(
