@@ -28,7 +28,7 @@ dst_models = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/object")
 src_categories = src_models.execute_kw(
     SRC_DB, src_uid, SRC_PASSWORD,
     'product.category', 'search_read',
-    [[('active', '=', True)]],
+    [[]],
     {'fields': ['name']}
 )
 
