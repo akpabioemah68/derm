@@ -120,5 +120,4 @@ for prod in src_products:
         }]
     )
 
-print(\"✅ Migration complete: categories, tags, parameters, and storable products copied.\")
-    
+print("Migration complete: categories, tags, parameters, and storable products copied.")
