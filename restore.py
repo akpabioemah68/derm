@@ -1,56 +1,67 @@
-import psycopg2
+import xmlrpc.client
 
-# Configuration
-DB_NAME = "new2"
-DB_USER = "postgres"
-DB_PASSWORD = "almond.2"
-DB_HOST = "localhost"
-DB_PORT = "5432"
-NEW_OWNER = "odoo"
+# === Configuration ===
+url = "http://localhost:8069"  # Assuming script is run from server
+dbname = "new2"
+username = "mailesom@gmail.com"
+password = "pr355ON@2020"
+product_id = 200
 
-def reassign_ownership():
-    try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        conn.autocommit = True
-        cur = conn.cursor()
+# === Connect to Odoo ===
+common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
+uid = common.authenticate(dbname, username, password, {})
+if not uid:
+    raise Exception("Failed to authenticate")
+models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
 
-        print("\n🔧 Reassigning ownership of tables in 'public' schema...")
-        cur.execute("""
-        DO $$
-        DECLARE
-            r RECORD;
-        BEGIN
-            FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
-                EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' OWNER TO """ + NEW_OWNER + """';
-            END LOOP;
+# === Step 1: Check if product is 'Storable' ===
+product = models.execute_kw(
+    dbname, uid, password,
+    'product.product', 'read',
+    [product_id],
+    {'fields': ['name', 'type']}
+)[0]
 
-            FOR r IN SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public' LOOP
-                EXECUTE 'ALTER SEQUENCE public.' || quote_ident(r.sequence_name) || ' OWNER TO """ + NEW_OWNER + """';
-            END LOOP;
+# === Step 2: Get Quantity on Hand from internal locations ===
+quants = models.execute_kw(
+    dbname, uid, password,
+    'stock.quant', 'search_read',
+    [[('product_id', '=', product_id), ('location_id.usage', '=', 'internal')]],
+    {'fields': ['location_id', 'quantity']}
+)
+total_on_hand = sum(q['quantity'] for q in quants)
 
-            FOR r IN SELECT table_name FROM information_schema.views WHERE table_schema = 'public' LOOP
-                EXECUTE 'ALTER VIEW public.' || quote_ident(r.table_name) || ' OWNER TO """ + NEW_OWNER + """';
-            END LOOP;
-        END $$;
-        """)
+# === Step 3: Check receipts (stock.moves) ===
+stock_moves = models.execute_kw(
+    dbname, uid, password,
+    'stock.move', 'search_read',
+    [[
+        ('product_id', '=', product_id),
+        ('state', '=', 'done'),
+        ('picking_type_id.code', '=', 'incoming')
+    ]],
+    {'fields': ['reference', 'product_uom_qty', 'location_dest_id', 'quantity_done', 'date'], 'order': 'date desc'}
+)
 
-        print("✅ Ownership reassigned to user:", NEW_OWNER)
+# === Step 4: Check if quants are in incorrect locations (not internal) ===
+all_quants = models.execute_kw(
+    dbname, uid, password,
+    'stock.quant', 'search_read',
+    [[('product_id', '=', product_id)]],
+    {'fields': ['location_id', 'quantity']}
+)
 
-    except Exception as e:
-        print("❌ Error:", e)
+total_non_internal = sum(q['quantity'] for q in all_quants if q['location_id'][1] not in [l['location_id'][1] for l in quants])
 
-    finally:
-        if 'cur' in locals():
-            cur.close()
-        if 'conn' in locals():
-            conn.close()
+# === Output ===
+report = {
+    'Product Name': product['name'],
+    'Product Type': product['type'],
+    'Quantity On Hand (internal)': total_on_hand,
+    'Received & Validated Moves': stock_moves,
+    'All Quants': all_quants,
+    'Qty Outside Internal Locations': total_non_internal
+}
 
-if __name__ == "__main__":
-    reassign_ownership()
-    
+import pprint
+pprint.pprint(report)
