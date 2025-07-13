@@ -5,7 +5,7 @@ ODOO_URL = 'https://skinpulse.online'
 ODOO_DB = 'new2'
 ODOO_USERNAME = 'oga@skinpulse.online'
 ODOO_PASSWORD = 'pr355ON@2020'
-PRODUCT_ID = 200
+PRODUCT_ID = 191
 
 # ==== Connect to Odoo ====
 common = xmlrpc.client.ServerProxy(f"{ODOO_URL}/xmlrpc/2/common")
