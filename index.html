@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lulu Culture Foundation</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
       --primary: #b71c1c;
@@ -170,14 +171,50 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-.socials a {
-  display: block;
-  margin: 0.5rem 0;
-  text-decoration: none;
-  font-size: 1.2rem;
-  color: var(--accent);
-  font-weight: 600;
+.socials {
+  background: linear-gradient(to right, #fbe9e7, #fff);
+  padding: 3rem 2rem;
+  text-align: center;
 }
+
+.socials h2 {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  color: var(--accent);
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  font-size: 1.1rem;
+}
+
+.social-icons a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--dark);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s, background 0.3s;
+}
+
+.social-icons a:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.social-icons i {
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
 
 
     footer {
@@ -336,10 +373,15 @@
   height: 70px;
 }
 
-.contact-icons {
-  display: none;
-  gap: 1rem;
-  font-size: 1.5rem;
+.contact-icons a {
+  text-decoration: none;
+  font-size: 1.3rem;
+  margin-left: 1rem;
+  color: var(--accent);
+}
+
+.contact-icons a:hover {
+  color: var(--primary);
 }
 
 .hamburger {
@@ -371,11 +413,17 @@
     display: block;
   }
 
-  .contact-icons {
-    display: flex;
-    color: var(--accent);
-    align-items: center;
-  }
+  .contact-icons a {
+  text-decoration: none;
+  font-size: 1.3rem;
+  margin-left: 1rem;
+  color: var(--accent);
+}
+
+.contact-icons a:hover {
+  color: var(--primary);
+}
+
 }
     
     
@@ -383,15 +431,12 @@
 </head>
 <body>
 
-  <header>
+  
+<header>
   <img src="/assets/logo.png" alt="Logo" class="logo" />
   <div class="contact-icons">
-    <a href="tel:+2348164749626" title="Call">
-      📞
-    </a>
-    <a href="mailto:info@luluculture.org" title="Email">
-      ✉️
-    </a>
+    <a href="tel:+2348164749626" title="Call"><i class="fas fa-phone"></i></a>
+    <a href="mailto:info@luluculture.org" title="Email"><i class="fas fa-envelope"></i></a>
   </div>
   <div class="hamburger" onclick="toggleMenu()">☰</div>
   <nav>
@@ -401,7 +446,7 @@
     <a href="#contact">Contact</a>
   </nav>
 </header>
-
+  
 
   <div class="slider-hero">
     <img src="assets/slide1.jpg" alt="Slide 1" />
@@ -511,11 +556,20 @@
   </section>
 
   <section class="socials alt-bg">
-  <h2>Connect With Us</h2>
-  <a href="https://wa.me/2348164749626" title="WhatsApp" target="_blank">💬 +234816 474 9626</a>
-  <a href="https://instagram.com/lulculturefoundation" title="Instagram" target="_blank">📸 @lulculturefoundation</a>
-  <a href="mailto:info@luluculture.org" title="Email">✉️ info@luluculture.org</a>
-</section>
+  <h2>Follow Us</h2>
+  <div class="social-icons">
+    <a href="https://wa.me/2348164749626" target="_blank" title="WhatsApp">
+      <i class="fab fa-whatsapp"></i> +234816 474 9626
+    </a>
+    <a href="https://instagram.com/luluculture" target="_blank" title="Instagram">
+      <i class="fab fa-instagram"></i> @lulculturefoundation
+    </a>
+    <a href="mailto:info@luluculture.org" title="Email">
+      <i class="fas fa-envelope"></i> info@luluculture.org
+    </a>
+  </div>
+  </section>
+  
 
 
   <footer id="contact">
