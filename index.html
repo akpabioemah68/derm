@@ -258,7 +258,7 @@
     <div class="hero-content hide-text">
   <h1>Empowering Creativity & Growth</h1>
   <p>Unleashing human potential through innovation, diversity, and education</p>
-  <button onclick="scrollToSection('events')">View Upcoming Events</button>
+  <button id="hero-button" onclick="scrollToSection('events')">View Upcoming Events</button>
     </div>
     
   </div>
@@ -370,8 +370,8 @@
     }
   }
 
-  // HERO SLIDER TEXT CONTROL
   const heroContent = document.querySelector('.hero-content');
+  const heroButton = document.getElementById('hero-button');
   let currentIndex = 0;
   const totalSlides = 3;
 
@@ -379,11 +379,16 @@
     currentIndex = (currentIndex + 1) % totalSlides;
 
     if (currentIndex === 0) {
+      // Slide 1: hide text, link to events
       heroContent.classList.add('hide-text');
+      heroButton.setAttribute('onclick', "scrollToSection('events')");
     } else {
+      // Slide 2 & 3: show text, link to mission
       heroContent.classList.remove('hide-text');
+      heroButton.setAttribute('onclick', "scrollToSection('mission')");
     }
-  }, 5000); // assuming each slide shows for 5s
+  }, 5000); // match your animation timing
   </script>
+  
   
 </html>
