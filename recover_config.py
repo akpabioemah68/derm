@@ -3,28 +3,63 @@ import os
 import re
 
 # === Configuration ===
-conf_dir = "/etc/nginx/conf.d"
-nginx_dirs = ["/etc/nginx", conf_dir]
+nginx_base = "/etc/nginx"
+conf_dir = f"{nginx_base}/conf.d"
+log_dir = "/var/log/nginx"
 ssl_base = "/etc/letsencrypt/live"
 
-# Domain to config file and SSL cert mapping
+# Domain to conf mapping
 domains = {
     "skinpulse.online": {
         "conf_file": "odoo.conf",
-        "ssl_path": os.path.join(ssl_base, "skinpulse.online")
+        "ssl_path": f"{ssl_base}/skinpulse.online"
     },
     "idywarrie.com": {
         "conf_file": "idywarrie.conf",
-        "ssl_path": os.path.join(ssl_base, "idywarrie.com")
+        "ssl_path": f"{ssl_base}/idywarrie.com"
     }
 }
 
-# === Step 1: Ensure base directories exist ===
-def ensure_directories():
-    for d in nginx_dirs:
-        if not os.path.exists(d):
-            print(f"📁 Creating missing directory: {d}")
-            os.makedirs(d, exist_ok=True)
+# === Step 1: Ensure basic nginx directory structure and config ===
+def setup_nginx_directories_and_config():
+    print("📁 Checking nginx directory structure...")
+    os.makedirs(conf_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
+
+    nginx_conf_path = f"{nginx_base}/nginx.conf"
+    if not os.path.exists(nginx_conf_path):
+        print("⚠️ nginx.conf missing. Recreating minimal config...")
+        minimal_conf = f"""
+user nginx;
+worker_processes auto;
+error_log  {log_dir}/error.log;
+pid        /run/nginx.pid;
+
+events {{
+    worker_connections 1024;
+}}
+
+http {{
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  {log_dir}/access.log  main;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    include {conf_dir}/*.conf;
+}}
+"""
+        with open(nginx_conf_path, "w") as f:
+            f.write(minimal_conf.strip())
+        print(f"✅ Recreated nginx.conf at {nginx_conf_path}")
+    else:
+        print("✅ nginx.conf exists.")
 
 # === Step 2: Get NGINX master PID ===
 def get_nginx_master_pid():
@@ -43,71 +78,24 @@ def dump_memory(pid):
 
 # === Step 4: Extract server blocks for domains ===
 def extract_server_blocks(dump_file, domains):
-    print("🔍 Extracting server blocks...")
-    server_blocks = {domain: "" for domain in domains}
+    print("🔍 Extracting server blocks from memory...")
+    server_blocks = {}
 
     strings_output = subprocess.check_output(["strings", dump_file], text=True)
     full_text = "\n".join(strings_output.splitlines())
 
-    for domain in domains:
+    for domain, info in domains.items():
+        block = ""
         pattern = re.compile(rf"(server\s*\{{[^{{}}]*?{re.escape(domain)}.*?\}})", re.DOTALL)
         match = pattern.search(full_text)
         if match:
             block = match.group(1)
-            # Add SSL config if path exists
-            ssl_dir = domains[domain]["ssl_path"]
-            if os.path.exists(ssl_dir):
-                ssl_block = f"""
-    ssl_certificate     {ssl_dir}/fullchain.pem;
-    ssl_certificate_key {ssl_dir}/privkey.pem;
+            block = re.sub(r"(listen\s+\d+;)?", "listen 443 ssl;", block, count=1)
+
+            ssl_path = info["ssl_path"]
+            if os.path.exists(ssl_path):
+                block += f"""
+    ssl_certificate     {ssl_path}/fullchain.pem;
+    ssl_certificate_key {ssl_path}/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-"""
-                block = re.sub(r"server\s*{", "server {\n    listen 443 ssl;", block, 1)
-                block += ssl_block
-            else:
-                print(f"⚠️ SSL path not found for {domain}: {ssl_dir}")
-            server_blocks[domain] = block
-        else:
-            print(f"⚠️ No server block found for {domain}")
-    return server_blocks
-
-# === Step 5: Save to conf.d ===
-def save_configs(blocks):
-    for domain, data in domains.items():
-        conf_path = os.path.join(conf_dir, data["conf_file"])
-        with open(conf_path, "w") as f:
-            f.write(blocks[domain] or f"# Placeholder for {domain}")
-        print(f"✅ Wrote config: {conf_path}")
-
-# === Step 6: Test NGINX Config ===
-def test_nginx_config():
-    print("🧪 Testing NGINX configuration...")
-    result = subprocess.run(["nginx", "-t"], capture_output=True, text=True)
-    if result.returncode == 0:
-        print("✅ NGINX config is valid.")
-    else:
-        print("❌ NGINX config test failed:\n")
-        print(result.stderr)
-
-# === Main Flow ===
-def main():
-    try:
-        print("🚧 NGINX Recovery Script Starting...")
-        ensure_directories()
-
-        pid = get_nginx_master_pid()
-        dump_file = dump_memory(pid)
-
-        blocks = extract_server_blocks(dump_file, domains)
-        save_configs(blocks)
-
-        test_nginx_config()
-
-        print("\n📝 Done. You can now manually run:\n  sudo systemctl reload nginx")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
-if __name__ == "__main__":
-    main()
     
