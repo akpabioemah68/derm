@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lulu Culture Foundation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #b71c1c;
+      --accent: #c62828;
+      --light: #f8f8f8;
+      --dark: #212121;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #fff;
+      color: #222;
+    }
+
+    header {
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+    nav a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .slider-hero {
+      position: relative;
+      overflow: hidden;
+      height: 90vh;
+    }
+
+    .slider-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      animation: fade 15s infinite;
+    }
+
+    @keyframes fade {
+      0%, 33% { opacity: 1; }
+      34%, 66% { opacity: 0; }
+      67%, 100% { opacity: 1; }
+    }
+
+    .hero-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      z-index: 2;
+    }
+
+    .hero-content h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .hero-content button {
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      padding: 0.8rem 2rem;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    section {
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .alt-bg:nth-child(even) {
+      background: var(--light);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .box h3 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .events ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .events li {
+      margin: 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .video iframe {
+      width: 100%;
+      max-width: 720px;
+      height: 400px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .socials a {
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    footer {
+      background: var(--dark);
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="/assets/logo.png" alt="Lulu Culture Foundation Logo" />
+    <nav>
+      <a href="#mission">Mission</a>
+      <a href="#goals">Goals</a>
+      <a href="#events">Events</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <div class="slider-hero">
+    <img src="assets/slide1.jpeg" alt="Slide 1" />
+    <img src="assets/slide2.jpeg" alt="Slide 2" />
+        <img src="assets/slide3.png" alt="Slide 3" />
+    
+    <div class="hero-content">
+      <h1>Empowering Creativity & Growth</h1>
+      <p>Unleashing human potential through innovation, diversity, and education</p>
+      <button onclick="scrollToSection('mission')">Learn More</button>
+    </div>
+  </div>
+
+  <section class="alt-bg" id="mission">
+    <div class="grid">
+      <div class="box">
+        <h3>Vision</h3>
+        <p>Empowering individuals to discover, embrace, and unleash their unique potentials and creativity, fostering innovation and growth for a brighter, more inclusive future.</p>
+      </div>
+      <div class="box">
+        <h3>Mission</h3>
+        <p>To empower individuals to recognize their unique potential and unleash their creativity, providing the tools, support, and opportunities needed to transform ideas into impactful actions and meaningful achievements.</p>
+      </div>
+      <div class="box">
+        <h3>Core Values</h3>
+        <ul style="text-align: left;">
+          <li>Creativity</li>
+          <li>Audacity</li>
+          <li>Tenacity</li>
+          <li>Diligence</li>
+          <li>Discipline</li>
+        </ul>
+      </div>
+      <div class="box" id="goals">
+        <h3>Goals</h3>
+        <ol style="text-align: left;">
+          <li>Inspire Individual Growth</li>
+          <li>Promote Creativity and Innovation</li>
+          <li>Encourage Lifelong Learning</li>
+          <li>Champion Diversity and Inclusion</li>
+          <li>Provide Transformative Experiences</li>
+          <li>Collaborate for Impact</li>
+          <li>Support Sustainable Growth</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="events alt-bg" id="events">
+    <h2>Upcoming Events</h2>
+    <p>Join our programs that inspire creativity and innovation</p>
+    <ul>
+      <li><strong>August 20:</strong> Creativity for Change Workshop</li>
+      <li><strong>September 10:</strong> Youth Innovation Lab</li>
+      <li><strong>October 5:</strong> Culture & Impact Symposium</li>
+    </ul>
+  </section>
+
+  <section class="video">
+    <h2>Watch Our Story</h2>
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <section class="socials alt-bg">
+    <h2>Connect With Us</h2>
+    <a href="#" title="Facebook">📘</a>
+    <a href="#" title="Twitter">🐦</a>
+    <a href="#" title="Instagram">📸</a>
+    <a href="#" title="LinkedIn">💼</a>
+  </section>
+
+  <footer id="contact">
+    <p>&copy; 2025 Lulu Culture Foundation. All rights reserved.</p>
+    <p>Contact us: info@luluculture.org</p>
+  </footer>
+
+  <script>
+    function scrollToSection(id) {
+      const section = document.getElementById(id);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
+
+</body>
+</html>
