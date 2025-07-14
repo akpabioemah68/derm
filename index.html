@@ -235,6 +235,44 @@
 .icon {
   margin-right: 0.3rem;
 }
+
+
+.summit-card {
+  max-width: 700px;
+  margin: 3rem auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.summit-card:hover {
+  transform: translateY(-4px);
+}
+
+.summit-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-bottom: 1px solid var(--accent);
+}
+
+.info-card {
+  padding: 2rem;
+  text-align: center;
+  background: #fff;
+}
+
+.info-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
     
   </style>
 </head>
@@ -260,6 +298,7 @@
   <p>Unleashing human potential through innovation, diversity, and education</p>
   <button id="hero-button" onclick="scrollToSection('events')">View Upcoming Events</button>
     </div>
+    
     
   </div>
 
@@ -338,6 +377,15 @@
   </div>
 </section>
 
+<section class="summit-section alt-bg" id="summit-highlight">
+  <div class="summit-card">
+    <img src="assets/slide4.jpg" alt="Summit Action Image" class="summit-image" />
+
+    <div class="info-card">
+      <img src="assets/summit.jpg" alt="Summit Info" class="info-image" />
+    </div>
+  </div>
+</section>
 
   <section class="video">
     <h2>Watch Our Story</h2>
@@ -358,8 +406,6 @@
     <p>&copy; 2025 Lulu Culture Foundation. All rights reserved.</p>
     <p>Contact us: info@luluculture.org</p>
   </footer>
-
-
 
 </body>
   <script>
@@ -382,12 +428,14 @@
       // Slide 1: hide text, link to events
       heroContent.classList.add('hide-text');
       heroButton.setAttribute('onclick', "scrollToSection('events')");
+      heroButton.textContent = 'View Upcoming Events';
     } else {
       // Slide 2 & 3: show text, link to mission
       heroContent.classList.remove('hide-text');
       heroButton.setAttribute('onclick', "scrollToSection('mission')");
+      heroButton.textContent = 'Learn More';
     }
-  }, 5000); // match your animation timing
+  }, 5000); // each slide duration
   </script>
   
   
