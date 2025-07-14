@@ -237,40 +237,88 @@
 }
 
 
-.summit-card {
-  max-width: 700px;
-  margin: 3rem auto;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  transition: transform 0.3s;
-}
 
-.summit-card:hover {
-  transform: translateY(-4px);
-}
-
-.summit-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-bottom: 1px solid var(--accent);
-}
-
-.info-card {
+  /* Summit Section Styling */
+.summit-section {
   padding: 2rem;
-  text-align: center;
-  background: #fff;
+  max-width: 1200px;
+  margin: 0 auto 2rem auto;
 }
 
-.info-image {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  border-radius: 8px;
+.summit-section h2 {
+  text-align: center;
+  color: var(--accent);
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.summit-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.summit-image,
+.info-image {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* Desktop View - side by side */
+@media(min-width: 768px) {
+  .summit-card {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .summit-image,
+  .info-image {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .summit-image {
+    flex: 1;
+  }
+
+  .info-card {
+    flex: 1;
+  }
+}
+
+/* Adjust spacing before video section */
+.video {
+  margin-top: 1rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media(min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media(min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
     
@@ -377,15 +425,16 @@
   </div>
 </section>
 
-<section class="summit-section alt-bg" id="summit-highlight">
+<section class="summit-section" id="summit-highlight">
+  <h2>Think it Summit 2025</h2>
   <div class="summit-card">
     <img src="assets/slide4.jpg" alt="Summit Action Image" class="summit-image" />
-
     <div class="info-card">
       <img src="assets/summit.jpg" alt="Summit Info" class="info-image" />
     </div>
   </div>
 </section>
+  
 
   <section class="video">
     <h2>Watch Our Story</h2>
