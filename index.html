@@ -413,19 +413,49 @@
     display: block;
   }
 
-  .contact-icons a {
-  text-decoration: none;
-  font-size: 1.3rem;
-  margin-left: 1rem;
-  color: var(--accent);
-}
-
+  
 .contact-icons a:hover {
   color: var(--primary);
 }
 
 }
     
+   .contact-icons {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.95rem;
+  color: var(--accent);
+  flex-wrap: wrap;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.contact-item i {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .contact-icons {
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 1rem;
+    margin-top: 1rem;
+  }
+
+  .contact-item {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+ .grid-section {
+  background: linear-gradient(to right, #fbe9e7, #ffffff);
+ }
     
   </style>
 </head>
@@ -435,9 +465,16 @@
 <header>
   <img src="/assets/logo.png" alt="Logo" class="logo" />
   <div class="contact-icons">
-    <a href="tel:+2348164749626" title="Call"><i class="fas fa-phone"></i></a>
-    <a href="mailto:info@luluculture.org" title="Email"><i class="fas fa-envelope"></i></a>
+  <div class="contact-item">
+    <i class="fas fa-phone"></i>
+    <span>+234816 474 9626</span>
   </div>
+  <div class="contact-item">
+    <i class="fas fa-envelope"></i>
+    <span>info@luluculture.org</span>
+  </div>
+  </div>
+  
   <div class="hamburger" onclick="toggleMenu()">☰</div>
   <nav>
     <a href="#mission">Mission</a>
@@ -462,7 +499,7 @@
     
   </div>
 
-  <section class="alt-bg" id="mission">
+  <section class="alt-bg grid-section" id="mission">
     <div class="grid">
       <div class="box">
         <h3>Vision</h3>
@@ -497,7 +534,7 @@
     </div>
   </section>
 
-  <section class="events alt-bg" id="events">
+  <section class="events alt-bg  grid-section" id="events">
   <h2>Upcoming Events</h2>
 
   <div class="event-card">
