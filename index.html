@@ -358,14 +358,31 @@
     <p>Contact us: info@luluculture.org</p>
   </footer>
 
-  <script>
-    function scrollToSection(id) {
-      const section = document.getElementById(id);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  </script>
+
 
 </body>
+  <script>
+  function scrollToSection(id) {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  // HERO SLIDER TEXT CONTROL
+  const heroContent = document.querySelector('.hero-content');
+  let currentIndex = 0;
+  const totalSlides = 3;
+
+  setInterval(() => {
+    currentIndex = (currentIndex + 1) % totalSlides;
+
+    if (currentIndex === 0) {
+      heroContent.classList.add('hide-text');
+    } else {
+      heroContent.classList.remove('hide-text');
+    }
+  }, 5000); // assuming each slide shows for 5s
+  </script>
+  
 </html>
